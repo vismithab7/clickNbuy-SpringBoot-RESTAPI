@@ -10,6 +10,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.clickNbuy.dao.UserDao;
 import com.clickNbuy.dto.OtpDto;
+import com.clickNbuy.dto.PasswordDto;
 import com.clickNbuy.dto.ResponseDto;
 import com.clickNbuy.dto.UserDto;
 import com.clickNbuy.entity.Role;
@@ -17,6 +18,8 @@ import com.clickNbuy.entity.User;
 import com.clickNbuy.exception.DataExitsException;
 import com.clickNbuy.service.AuthService;
 import com.clickNbuy.util.EmailSender;
+
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 
 
@@ -74,17 +77,49 @@ public class AuthServiceImpl implements AuthService {
 	
 	@Override
 	public ResponseDto resendOtp(String email) {
-	User user=userDao.findByEmail(email);
-	int otp=new Random().nextInt(100000,1000000);
-	emailsender.sendOtp(user.getEmail(), otp, user.getName());
+	       User user=userDao.findByEmail(email);
+	       int otp=new Random().nextInt(100000,1000000);
+	       emailsender.sendOtp(user.getEmail(), otp, user.getName());
 	
-	user.setOtp(otp);
-	user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
-	userDao.saveUser(user);
-	Map<String, String> map = new HashMap<String, String>();
-	map.put("email", email);
-	map.put("name", user.getName());
-	return new ResponseDto("Otp Resent Success valid only for 5 minutes", map);
+	       user.setOtp(otp);
+	       user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+	       userDao.saveUser(user);
+	       Map<String, String> map = new HashMap<String, String>();
+	       map.put("email", email);
+	       map.put("name", user.getName());
+	       return new ResponseDto("Otp Resent Success valid only for 5 minutes", map);
+	}
+
+	@Override
+	public ResponseDto forgotpassword(String email) {
+		User user = userDao.findByEmail(email);
+		int otp = new Random().nextInt(100000, 1000000);
+		emailsender.sendForgotOtp(user.getEmail(), otp, user.getName());
+		user.setOtp(otp);
+		user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+		userDao.saveUser(user);
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("email", email);
+		return new ResponseDto("Otp Sent Success valid only for 5 minutes", map);
+		
+	}
+
+	@Override
+	public ResponseDto forgotPassword(@Valid PasswordDto passwordDto) throws TimeoutException  {
+		User user = userDao.findByEmail(passwordDto.getEmail());
+		if (LocalDateTime.now().isBefore(user.getOtpExpiryTime())) {
+			if (passwordDto.getOtp() .equals(String.valueOf(user.getOtp()))) {
+				user.setPassword(encoder.encode(passwordDto.getPassword()));
+				user.setOtp(0);
+				user.setOtpExpiryTime(null);
+				userDao.saveUser(user);
+				return new ResponseDto("Password Updated Success", user);
+			} else {
+				throw new InputMismatchException("Otp miss match, Try Again");
+			}
+		} else {
+			throw new TimeoutException("Otp Expired, Resend Otp and Try Again");
+		}
 	}
 	
 	

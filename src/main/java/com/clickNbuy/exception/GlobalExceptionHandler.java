@@ -48,6 +48,11 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(TimeoutException exception) {
 		return new ErrorDto(exception.getMessage());
 	}
+	@ExceptionHandler(NullPointerException.class)
+	@ResponseStatus(code = HttpStatus.INTERNAL_SERVER_ERROR)
+	public ErrorDto handle(NullPointerException exception) {
+		return new ErrorDto("Sorry, Something Went Wrong, WE will fix it");
+	}
 	
 	@ExceptionHandler(InputMismatchException.class)
 	@ResponseStatus(code = HttpStatus.REQUEST_TIMEOUT)

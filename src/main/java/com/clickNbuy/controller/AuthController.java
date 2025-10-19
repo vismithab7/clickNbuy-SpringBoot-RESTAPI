@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.clickNbuy.dto.OtpDto;
+import com.clickNbuy.dto.PasswordDto;
 import com.clickNbuy.dto.ResponseDto;
 import com.clickNbuy.dto.UserDto;
 import com.clickNbuy.service.AuthService;
@@ -46,5 +47,19 @@ public class AuthController {
 		return authService.resendOtp(email);
 		
 	}
+	
+	@GetMapping("/forgot-password")
+	@ResponseStatus(code =HttpStatus.OK)
+	public ResponseDto forgotpassword(@RequestParam String email) {
+		return authService.forgotpassword(email);
+		
+	}
+	
+	@PostMapping("/forgot-password")
+	@ResponseStatus(code = HttpStatus.OK)
+	public ResponseDto forgotPassword(@Valid @RequestBody PasswordDto passwordDto) throws TimeoutException {
+		return authService.forgotPassword(passwordDto);
+	}
+	
 	
 }
