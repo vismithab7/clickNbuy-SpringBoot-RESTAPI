@@ -1,7 +1,8 @@
 package com.clickNbuy.impl;
 import java.time.LocalDateTime;
-
+import java.util.HashMap;
 import java.util.InputMismatchException;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
@@ -69,6 +70,23 @@ public class AuthServiceImpl implements AuthService {
 	
 		}	
 	}
+	
+	
+	@Override
+	public ResponseDto resendOtp(String email) {
+	User user=userDao.findByEmail(email);
+	int otp=new Random().nextInt(100000,1000000);
+	emailsender.sendOtp(user.getEmail(), otp, user.getName());
+	
+	user.setOtp(otp);
+	user.setOtpExpiryTime(LocalDateTime.now().plusMinutes(5));
+	userDao.saveUser(user);
+	Map<String, String> map = new HashMap<String, String>();
+	map.put("email", email);
+	map.put("name", user.getName());
+	return new ResponseDto("Otp Resent Success valid only for 5 minutes", map);
+	}
+	
 	
 
 }

@@ -12,6 +12,8 @@ public interface AuthService {
 
 	ResponseDto verifyOtp(OtpDto otpDto) throws TimeoutException;
 
+	ResponseDto resendOtp(String email);
+
 	
 
 	
