@@ -3,6 +3,7 @@ package com.clickNbuy.dao;
 import org.springframework.stereotype.Repository;
 
 import com.clickNbuy.entity.User;
+import com.clickNbuy.exception.DataNotFoundException;
 import com.clickNbuy.repository.UserRepository;
 
 import lombok.AllArgsConstructor;
@@ -28,4 +29,9 @@ public class UserDao {
 		
 	}
 
+	
+	public User findByEmail(String email) {
+		return userRepository.findByEmail(email).orElseThrow(()->new DataNotFoundException("Email Does'not found"));
+		
+	}
 }

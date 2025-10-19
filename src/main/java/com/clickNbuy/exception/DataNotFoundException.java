@@ -5,10 +5,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @SuppressWarnings("serial")
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-public class DataExitsException extends RuntimeException {
+public class DataNotFoundException extends RuntimeException {
+	
+	String message ="Data Not Found";
+	
+	
 
-	String message="Data Already Exits";
 }

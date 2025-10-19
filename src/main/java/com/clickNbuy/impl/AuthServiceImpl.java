@@ -1,11 +1,14 @@
 package com.clickNbuy.impl;
 import java.time.LocalDateTime;
-import java.util.Random;
 
+import java.util.InputMismatchException;
+import java.util.Random;
+import java.util.concurrent.TimeoutException;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.clickNbuy.dao.UserDao;
+import com.clickNbuy.dto.OtpDto;
 import com.clickNbuy.dto.ResponseDto;
 import com.clickNbuy.dto.UserDto;
 import com.clickNbuy.entity.Role;
@@ -37,8 +40,8 @@ public class AuthServiceImpl implements AuthService {
 			
 			emailsender.sendOtp(userDto.getEmail(),otp,userDto.getName());
 			
-			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole()), false));
-			return new ResponseDto("Otp sent success, Verify withi 5 minutes ", userDto);
+			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false));
+			return new ResponseDto("Otp sent success, Verify within 5 minutes ", userDto);
 		}else {
 			if(!userDao.isEmailUnique(userDto.getEmail()))
 					throw new DataExitsException("Email Alreday Exits : "+ userDto.getEmail());
@@ -46,6 +49,25 @@ public class AuthServiceImpl implements AuthService {
 				throw new DataExitsException("Mobile Alreday Exits : "+ userDto.getMobile());
 		}
 		
+	}
+
+	@Override
+	public ResponseDto verifyOtp(OtpDto otpDto) throws TimeoutException {
+	User user=userDao.findByEmail(otpDto.getEmail());
+	if(LocalDateTime.now().isBefore(user.getOtpExpiryTime())) {
+		if(otpDto.getOtp()==user.getOtp()) {
+			user.setStatus(true);
+			user.setOtp(0);
+			user.setOtpExpiryTime(null);
+			userDao.saveUser(user);
+			return new ResponseDto("Account Created Success", user);
+		}else {
+			throw new InputMismatchException("Otp miss match, Try Again");
+		      }
+	     }else {
+		throw new TimeoutException("Otp Expired, Resend Otp and Try Again");
+	
+		}	
 	}
 	
 
