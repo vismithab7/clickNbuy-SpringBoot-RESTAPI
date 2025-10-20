@@ -55,7 +55,9 @@ public class AuthServiceImpl implements AuthService {
 			emailsender.sendOtp(userDto.getEmail(),otp,userDto.getName());
 			
 			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false));
+			System.out.println(otp);
 			return new ResponseDto("Otp sent success, Verify within 5 minutes ", userDto);
+			
 		}else {
 			if(!userDao.isEmailUnique(userDto.getEmail()))
 					throw new DataExitsException("Email Alreday Exits : "+ userDto.getEmail());

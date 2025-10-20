@@ -36,6 +36,11 @@ public class User {
 	@Enumerated(EnumType.STRING)
 	private Role role;
 	private boolean status;
+	public boolean isStatus(boolean b) {
+		
+		return true;
+	}
+	
 	
 	
 
