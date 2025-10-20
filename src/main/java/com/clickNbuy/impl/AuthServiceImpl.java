@@ -1,4 +1,5 @@
 package com.clickNbuy.impl;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.InputMismatchException;
@@ -50,14 +51,13 @@ public class AuthServiceImpl implements AuthService {
 		
 		if (userDao.isEmailAndMobileUnique(userDto.getEmail(), userDto.getMobile())) {
 			
-			int otp=new Random().nextInt(100000,1000000);
+			int otp=new SecureRandom().nextInt(100000,1000000);
 			
 			emailsender.sendOtp(userDto.getEmail(),otp,userDto.getName());
 			
-			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false));
-			System.out.println(otp);
+			userDao.saveUser(new User(null, userDto.getName(), userDto.getEmail(),encoder.encode(userDto.getPassword()), userDto.getMobile(), null, otp,LocalDateTime.now().plusMinutes(5), Role.valueOf("ROLE_" + userDto.getRole().toUpperCase()), false, otp, null));
 			return new ResponseDto("Otp sent success, Verify within 5 minutes ", userDto);
-			
+//			System.out.println(otp);
 		}else {
 			if(!userDao.isEmailUnique(userDto.getEmail()))
 					throw new DataExitsException("Email Alreday Exits : "+ userDto.getEmail());
