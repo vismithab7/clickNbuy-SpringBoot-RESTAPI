@@ -2,10 +2,13 @@ package com.clickNbuy.service;
 
 import java.util.concurrent.TimeoutException;
 
+import com.clickNbuy.dto.LoginDto;
 import com.clickNbuy.dto.OtpDto;
 import com.clickNbuy.dto.PasswordDto;
 import com.clickNbuy.dto.ResponseDto;
 import com.clickNbuy.dto.UserDto;
+
+
 
 
 
@@ -23,6 +26,8 @@ public interface AuthService {
 
 
 	ResponseDto forgotPassword( PasswordDto passwordDto) throws TimeoutException;
+
+	ResponseDto login( LoginDto loginDto);
 
 	
 

@@ -6,9 +6,14 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import com.clickNbuy.dao.UserDao;
+import com.clickNbuy.dto.LoginDto;
 import com.clickNbuy.dto.OtpDto;
 import com.clickNbuy.dto.PasswordDto;
 import com.clickNbuy.dto.ResponseDto;
@@ -16,6 +21,7 @@ import com.clickNbuy.dto.UserDto;
 import com.clickNbuy.entity.Role;
 import com.clickNbuy.entity.User;
 import com.clickNbuy.exception.DataExitsException;
+import com.clickNbuy.security.JwtUtil;
 import com.clickNbuy.service.AuthService;
 import com.clickNbuy.util.EmailSender;
 
@@ -32,13 +38,17 @@ public class AuthServiceImpl implements AuthService {
 	
 	PasswordEncoder encoder;
 	EmailSender emailsender;
+	AuthenticationManager authenticationManager;
+	UserDetailsService userDetailsService;
+	JwtUtil jwtUtil;
+	
 
 	@Override
 	public ResponseDto register(UserDto userDto) {
 		
 		
 		
-		if(userDao.isEmailUnique(userDto.getEmail()) && userDao.isMobileUnique(userDto.getMobile())) {
+		if (userDao.isEmailAndMobileUnique(userDto.getEmail(), userDto.getMobile())) {
 			
 			int otp=new Random().nextInt(100000,1000000);
 			
@@ -121,10 +131,26 @@ public class AuthServiceImpl implements AuthService {
 			throw new TimeoutException("Otp Expired, Resend Otp and Try Again");
 		}
 	}
+
+	@Override
+	public ResponseDto login(LoginDto loginDto) {
+		authenticationManager
+		.authenticate(new UsernamePasswordAuthenticationToken(loginDto.getEmail(), loginDto.getPassword()));
+
+         UserDetails userDetails = userDetailsService.loadUserByUsername(loginDto.getEmail());
+         String token = jwtUtil.generateToken(userDetails);
+
+         Map<String, String> map = new HashMap<String, String>();
+         map.put("token", token);
+         return new ResponseDto("Login Success", map);
+
+	}
+
+}
 	
 	
 
-}
+
 
 
 
