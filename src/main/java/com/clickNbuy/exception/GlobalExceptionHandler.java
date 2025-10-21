@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 import org.springframework.http.HttpStatus;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.validation.FieldError;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.clickNbuy.dto.ErrorDto;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 
 @RestControllerAdvice
 @ControllerAdvice
@@ -91,5 +93,17 @@ public class GlobalExceptionHandler {
 	public ErrorDto handle(AuthorizationDeniedException exception) {
 		return new ErrorDto(exception.toString());
 	}
+	
+	 @ExceptionHandler(HttpMessageNotReadableException.class)
+	    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+	    public ErrorDto handle(HttpMessageNotReadableException exception) {
+	        if (exception.getCause() instanceof InvalidFormatException) {
+	            return new ErrorDto("Invalid input format or category value — please check your data.");
+	        }
+	        return new ErrorDto("Malformed JSON or incorrect data format.");
+	    }
+	 
+	
+
 
 }
